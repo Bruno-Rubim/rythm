@@ -1,33 +1,22 @@
 let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
 
 let keyIsPressed = {};
 
-let canvasColor = "rgb(0, 0, 0)"
+let canvasColor = "rgb(0, 0, 0)";
+
+let startTime = Date.now();
+let measureStartTime = Date.now() - startTime;
+let measureCounter = Date.now() - measureStartTime;
+
+let chant = ['0', '0', '0', '0'];
+let currentNote;
 
 let hihat = document.querySelector('#hihat');
-hihat.volume = "0.1";
-
-// keys
-
-function translateKeys(){
-    if (keyIsPressed["Numpad6"]){
-        console.log("Pon");
-    }
-}
-
-function keydownHandler(e){
-    keyIsPressed[e.code] = 1;
-    //console.log(e.code);
-}
-
-window.addEventListener("keydown", keydownHandler);
-
-function keyupHandler(e){
-    keyIsPressed[e.code] = false;
-}
-
-window.addEventListener("keyup", keyupHandler);
+hihat.volume = "0.1";measureCounter = Date.now() - measureStartTime;
 
 
 // metronome
@@ -36,23 +25,71 @@ function metronomeSound(){
     hihat.play();
 }
 
-function noRythmTimer(){
-    canvasColor = "rgb(0, 0, 0)"
-    setTimeout(noteCheck, (120/240)*800);
+function resetMeasure(){
+    measureStartTime = Date.now();
 }
 
-function noteCheck(){
-    canvasColor = "rgb(0, 255, 32)"
-    if(keyIsPressed["Numpad6"]){
-        canvasColor = "rgb(32, 0, 255)"
+function updateMeasure(){
+    measureCounter = Date.now() - measureStartTime;
+}
+
+function timeCheck(){
+    if (measureCounter > 2000) {
+        resetMeasure();
     }
-    setTimeout(noRythmTimer, (120/240)*200);
+    if ((measureCounter > 1950 || measureCounter < 50)){
+        chant[0] = currentNote;
+        console.log(chant);
+    }
+    if ((measureCounter > 450 && measureCounter < 550)){
+        chant[1] = currentNote;
+        console.log(chant);
+    }
+    if ((measureCounter > 950 && measureCounter < 1050)){
+        chant[2] = currentNote;
+        console.log(chant);
+    }
+    if ((measureCounter > 1450 && measureCounter < 1550)){
+        chant[3] = currentNote;
+        console.log(chant);
+    }
+    //console.log(measureCounter);
 }
 
-function addBasicMetronome(bpm){
-    setInterval(metronomeSound, (bpm/240)*1000);
 
+//notes
+
+
+
+
+// keys
+
+function translateKeys(){
 }
+
+function keydownStartHandler(e){
+    if (e == "Numpad6"){
+        currentNote = "Pon";
+        console.log("pon");
+    } else {
+    }
+}
+
+function keydownHandler(e){
+    if (!keyIsPressed[e.code]) {
+        keydownStartHandler(e.code);
+    }
+    currentNote = "0";
+    keyIsPressed[e.code] = true;
+}
+window.addEventListener("keydown", keydownHandler);
+
+function keyupHandler(e){
+    keyIsPressed[e.code] = false;
+}
+
+window.addEventListener("keyup", keyupHandler);
+
 
 // rendering
 
@@ -71,11 +108,11 @@ function render(){
 }
 
 function frame(){
+    updateMeasure();
+    timeCheck();
     translateKeys();
     render();
     requestAnimationFrame(frame);
 }
 
-setTimeout(noRythmTimer, 450); 
-addBasicMetronome(120);
 frame();
