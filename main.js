@@ -10,13 +10,15 @@ let canvasColor = "rgb(0, 0, 0)";
 
 let startTime = Date.now();
 let measureStartTime = Date.now() - startTime;
-let measureCounter = Date.now() - measureStartTime;
+let measureTimeCounter = Date.now() - measureStartTime;
+
+let windowStart = true;
 
 let chant = ['0', '0', '0', '0'];
 let currentNote;
 
 let hihat = document.querySelector('#hihat');
-hihat.volume = "0.1";measureCounter = Date.now() - measureStartTime;
+hihat.volume = "0.1";
 
 
 // metronome
@@ -30,30 +32,44 @@ function resetMeasure(){
 }
 
 function updateMeasure(){
-    measureCounter = Date.now() - measureStartTime;
+    measureTimeCounter = Date.now() - measureStartTime;
+}
+
+function createWindow(noteCount){
+    if(windowStart){
+        setTimeout(metronomeSound, 50);
+    }
+
+    windowStart = false;
 }
 
 function timeCheck(){
-    if (measureCounter > 2000) {
+    if (measureTimeCounter > 2000) {
         resetMeasure();
+        console.log(chant);
     }
-    if ((measureCounter > 1950 || measureCounter < 50)){
+    if ((measureTimeCounter > 1950 || measureTimeCounter < 50)){
+        hihat.volume = "0.5";
+        createWindow();
         chant[0] = currentNote;
-        console.log(chant);
-    }
-    if ((measureCounter > 450 && measureCounter < 550)){
+        console.log(currentNote);
+    } else if ((measureTimeCounter > 450 && measureTimeCounter < 550)){
+        hihat.volume = "0.1";
+        createWindow();
         chant[1] = currentNote;
-        console.log(chant);
-    }
-    if ((measureCounter > 950 && measureCounter < 1050)){
+    } else if ((measureTimeCounter > 950 && measureTimeCounter < 1050)){
+        hihat.volume = "0.1";
+        createWindow();
         chant[2] = currentNote;
-        console.log(chant);
-    }
-    if ((measureCounter > 1450 && measureCounter < 1550)){
+    } else if ((measureTimeCounter > 1450 && measureTimeCounter < 1550)){
+        hihat.volume = "0.1";
+        createWindow();
         chant[3] = currentNote;
-        console.log(chant);
+    } else {
+        currentNote = '0';
+        windowStart = true;
     }
-    //console.log(measureCounter);
+    //console.log(measureTimeCounter);
 }
 
 
