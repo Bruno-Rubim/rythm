@@ -14,6 +14,7 @@ let measureTimeCounter = Date.now() - measureStartTime;
 
 let windowStart = true;
 let notePlayed = false;
+let outOfCheckWindow = false;
 let outOfRythm = false;
 
 let chant = ['0', '0', '0', '0'];
@@ -31,6 +32,12 @@ function metronomeSound(){
 
 function resetMeasure(){
     measureStartTime = Date.now();
+}
+
+function resetChant(){
+    chant = ["0", "0", "0", "0"];
+    outOfRythm = false;
+    measureStartTime -= (Math.floor(measureTimeCounter/250) + 1) * 500;
 }
 
 function updateMeasure(){
@@ -52,23 +59,23 @@ function timeCheck(){
         resetMeasure();
         console.log(chant);
     }
-    if ((measureTimeCounter > 1950 || measureTimeCounter < 50)){
+    if ((measureTimeCounter > 0 || measureTimeCounter < 100)){
         hihat.volume = "0.5";
-        createWindow();
-    } else if ((measureTimeCounter > 450 && measureTimeCounter < 550)){
+        createWindow(Math.floor(measureTimeCounter/250));
+    } else if ((measureTimeCounter > 500 && measureTimeCounter < 600)){
         hihat.volume = "0.1";
-        createWindow();
-    } else if ((measureTimeCounter > 950 && measureTimeCounter < 1050)){
+        createWindow(Math.floor(measureTimeCounter/250));
+    } else if ((measureTimeCounter > 1000 && measureTimeCounter < 1100)){
         hihat.volume = "0.1";
-        createWindow();
-    } else if ((measureTimeCounter > 1450 && measureTimeCounter < 1550)){
+        createWindow(Math.floor(measureTimeCounter/250));
+    } else if ((measureTimeCounter > 1500 && measureTimeCounter < 1600)){
         hihat.volume = "0.1";
-        createWindow();
+        createWindow(Math.floor(measureTimeCounter/250));
     } else {
         currentNote = '0';
         notePlayed = false;
         windowStart = true;
-        outOfRythm = true;
+        outOfCheckWindow = true;
     }
 }
 
@@ -85,10 +92,11 @@ function translateKeys(){
 
 function keydownStartHandler(e){
     if (e == "Numpad6"){
-        if (notePlayed || outOfRythm) {
+        if (notePlayed || outOfCheckWindow) {
             console.log("Broken rythm");
+            resetChant();
         } else {
-            currentNote = "Pon";
+            currentNote = "pon";
             console.log("pon");
             notePlayed = true;
         }
