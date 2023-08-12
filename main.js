@@ -13,6 +13,8 @@ let measureStartTime = Date.now() - startTime;
 let measureTimeCounter = Date.now() - measureStartTime;
 
 let windowStart = true;
+let notePlayed = false;
+let outOfRythm = false;
 
 let chant = ['0', '0', '0', '0'];
 let currentNote;
@@ -39,7 +41,9 @@ function createWindow(noteCount){
     if(windowStart){
         setTimeout(metronomeSound, 50);
     }
-
+    if(notePlayed){
+        chant[noteCount] = currentNote;
+    }
     windowStart = false;
 }
 
@@ -51,25 +55,21 @@ function timeCheck(){
     if ((measureTimeCounter > 1950 || measureTimeCounter < 50)){
         hihat.volume = "0.5";
         createWindow();
-        chant[0] = currentNote;
-        console.log(currentNote);
     } else if ((measureTimeCounter > 450 && measureTimeCounter < 550)){
         hihat.volume = "0.1";
         createWindow();
-        chant[1] = currentNote;
     } else if ((measureTimeCounter > 950 && measureTimeCounter < 1050)){
         hihat.volume = "0.1";
         createWindow();
-        chant[2] = currentNote;
     } else if ((measureTimeCounter > 1450 && measureTimeCounter < 1550)){
         hihat.volume = "0.1";
         createWindow();
-        chant[3] = currentNote;
     } else {
         currentNote = '0';
+        notePlayed = false;
         windowStart = true;
+        outOfRythm = true;
     }
-    //console.log(measureTimeCounter);
 }
 
 
@@ -85,8 +85,13 @@ function translateKeys(){
 
 function keydownStartHandler(e){
     if (e == "Numpad6"){
-        currentNote = "Pon";
-        console.log("pon");
+        if (notePlayed || outOfRythm) {
+            console.log("Broken rythm");
+        } else {
+            currentNote = "Pon";
+            console.log("pon");
+            notePlayed = true;
+        }
     } else {
     }
 }
