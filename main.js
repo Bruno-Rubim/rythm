@@ -2,105 +2,128 @@ let canvas = document.querySelector('canvas');
 let ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
+let canvasColor = "#000";
 
 let keyIsPressed = {};
 
-let canvasColor = "rgb(0, 0, 0)";
-
 let startTime = Date.now();
-let measureStartTime = Date.now() - startTime;
-let measureTimeCounter = Date.now() - measureStartTime;
 
-let windowStart = true;
-let notePlayed = false;
-let outOfCheckWindow = false;
-let outOfRythm = false;
+const WINDOW_OPEN_BEFORE_TIC = "window open bt";
+const WINDOW_OPEN_AFTER_TIC = "window open at";
+const WINDOW_CLOSED = "window closed";
+let windowState;
+let windowStart;
+let windowEnd;
+let ticTime;
+let windowOpen = false;
 
-let chant = ['0', '0', '0', '0'];
-let currentNote;
+let currentNote = '';
 
 let hihat = document.querySelector('#hihat');
-hihat.volume = "0.1";
+hihat.volume = "0.5";
+let snare = document.querySelector('#snare');
+snare.volume = "0.5";
+let bass = document.querySelector('#bass');
+bass.volume = "0.5";
+
+// Time
+
+function getTime() {
+    return Date.now() - startTime;
+}
 
 
-// metronome
+// Window
 
-function metronomeSound(){
+function handlerWindowOpenBeforeTic(){
+    windowOpen = true;
+    windowState = WINDOW_OPEN_AFTER_TIC;
+}
+
+function handlerWindowOpenAfterTic(){
+    windowState = WINDOW_CLOSED;
     hihat.play();
 }
 
-function resetMeasure(){
-    measureStartTime = Date.now();
+function handlerWindowClosed(ticInterval){
+    windowState = WINDOW_OPEN_BEFORE_TIC;
+    windowOpen = false;
+    windowStart += ticInterval;
+    windowEnd += ticInterval;
+    ticTime += ticInterval;
+    currentNote = '';
 }
 
-function resetChant(){
-    chant = ["0", "0", "0", "0"];
-    outOfRythm = false;
-    measureStartTime -= (Math.floor(measureTimeCounter/250) + 1) * 500;
+function startWindowLoop(windowGap){
+    windowState = WINDOW_OPEN_BEFORE_TIC;
+    windowStart = getTime();
+    windowEnd = windowStart + windowGap;
+    ticTime = windowStart + (windowGap/1.6);
+    
 }
 
-function updateMeasure(){
-    measureTimeCounter = Date.now() - measureStartTime;
-}
-
-function createWindow(noteCount){
-    if(windowStart){
-        setTimeout(metronomeSound, 50);
+function updateWindowState(ticInterval) {
+    switch(windowState) {
+        case WINDOW_OPEN_BEFORE_TIC:
+            if (getTime() >= ticTime) {
+                handlerWindowOpenBeforeTic();
+            }
+            break;
+        case WINDOW_OPEN_AFTER_TIC:
+            if (getTime() >= windowEnd) {
+                handlerWindowOpenAfterTic();
+            }
+            break;
+        case WINDOW_CLOSED:
+            if (getTime() >= windowStart){
+                handlerWindowClosed(ticInterval);
+            }
+            break;
     }
-    if(notePlayed){
-        chant[noteCount] = currentNote;
-    }
-    windowStart = false;
 }
 
-function timeCheck(){
-    if (measureTimeCounter > 2000) {
-        resetMeasure();
-        console.log(chant);
-    }
-    if ((measureTimeCounter > 0 || measureTimeCounter < 100)){
-        hihat.volume = "0.5";
-        createWindow(Math.floor(measureTimeCounter/250));
-    } else if ((measureTimeCounter > 500 && measureTimeCounter < 600)){
-        hihat.volume = "0.1";
-        createWindow(Math.floor(measureTimeCounter/250));
-    } else if ((measureTimeCounter > 1000 && measureTimeCounter < 1100)){
-        hihat.volume = "0.1";
-        createWindow(Math.floor(measureTimeCounter/250));
-    } else if ((measureTimeCounter > 1500 && measureTimeCounter < 1600)){
-        hihat.volume = "0.1";
-        createWindow(Math.floor(measureTimeCounter/250));
+
+function checkWindowOpen(){
+    if (windowOpen){
+        canvasColor = "#201";
     } else {
-        currentNote = '0';
-        notePlayed = false;
-        windowStart = true;
-        outOfCheckWindow = true;
+        canvasColor = "#000";
     }
 }
-
-
-//notes
-
-
-
 
 // keys
 
-function translateKeys(){
-}
-
-function keydownStartHandler(e){
-    if (e == "Numpad6"){
-        if (notePlayed || outOfCheckWindow) {
-            console.log("Broken rythm");
-            resetChant();
+function keydownStartHandler(key){
+    noteAttempt = false;
+    if(key == "Numpad4" || 
+    key == "Numpad6" || 
+    key == "Numpad2" ||
+    key == "Numpad8"){
+        noteAttempt = true;
+    }
+    if(noteAttempt){
+        if(windowOpen){
+            switch(key){
+                case "Numpad4":
+                    currentNote = "pata";
+                    snare.play();
+                    break;
+                case "Numpad6":
+                    currentNote = "pata";
+                    snare.play();
+                    break;
+                case "Numpad2":
+                    currentNote = "don";
+                    bass.play();
+                    break;
+                case "Numpad8":
+                    currentNote = "pata";
+                    snare.play();
+                    break;
+            }
         } else {
-            currentNote = "pon";
-            console.log("pon");
-            notePlayed = true;
+            console.log("outOfSync");
         }
-    } else {
     }
 }
 
@@ -108,7 +131,6 @@ function keydownHandler(e){
     if (!keyIsPressed[e.code]) {
         keydownStartHandler(e.code);
     }
-    currentNote = "0";
     keyIsPressed[e.code] = true;
 }
 window.addEventListener("keydown", keydownHandler);
@@ -119,13 +141,7 @@ function keyupHandler(e){
 
 window.addEventListener("keyup", keyupHandler);
 
-
 // rendering
-
-function clearCanvas(){
-    ctx.fillStyle = "rgb(0, 0, 0)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
 
 function paintCanvas(color){
     ctx.fillStyle = color;
@@ -136,10 +152,11 @@ function render(){
     paintCanvas(canvasColor);
 }
 
+startWindowLoop(300);
 function frame(){
-    updateMeasure();
-    timeCheck();
-    translateKeys();
+    updateWindowState(500);
+    checkWindowOpen();
+    keydownStartHandler();
     render();
     requestAnimationFrame(frame);
 }
