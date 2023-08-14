@@ -18,13 +18,17 @@ let ticTime;
 let windowOpen = false;
 
 let currentNote = '';
+let noteCounter = 0;
+let commandLine = [];
 
-let hihat = document.querySelector('#hihat');
-hihat.volume = "0.5";
+let ticSound = document.querySelector('#tic');
+ticSound.volume = "0.5";
 let snare = document.querySelector('#snare');
 snare.volume = "0.5";
-let bass = document.querySelector('#bass');
-bass.volume = "0.5";
+let dunda = document.querySelector('#dunda');
+dunda.volume = "0.5";
+let pon = document.querySelector('#pon');
+pon.volume = "0.5";
 
 // Time
 
@@ -42,7 +46,7 @@ function handlerWindowOpenBeforeTic(){
 
 function handlerWindowOpenAfterTic(){
     windowState = WINDOW_CLOSED;
-    hihat.play();
+    ticSound.play();
 }
 
 function handlerWindowClosed(ticInterval){
@@ -51,14 +55,22 @@ function handlerWindowClosed(ticInterval){
     windowStart += ticInterval;
     windowEnd += ticInterval;
     ticTime += ticInterval;
-    currentNote = '';
+    if (currentNote != ''){
+        commandLine[noteCounter] = currentNote;
+        noteCounter++;
+        currentNote = '';
+    } else {
+        noteCounter = 0;
+        commandLine.length = 0;
+    }
+    console.log(commandLine);
 }
 
 function startWindowLoop(windowGap){
     windowState = WINDOW_OPEN_BEFORE_TIC;
     windowStart = getTime();
     windowEnd = windowStart + windowGap;
-    ticTime = windowStart + (windowGap/1.6);
+    ticTime = windowStart + (windowGap/2);
     
 }
 
@@ -107,14 +119,16 @@ function keydownStartHandler(key){
                 case "Numpad4":
                     currentNote = "pata";
                     snare.play();
+                    canvasColor = "#f07";
                     break;
                 case "Numpad6":
-                    currentNote = "pata";
-                    snare.play();
+                    currentNote = "pon";
+                    pon.play();
+                    canvasColor = "#70f";
                     break;
                 case "Numpad2":
-                    currentNote = "don";
-                    bass.play();
+                    currentNote = "dunda";
+                    dunda.play();
                     break;
                 case "Numpad8":
                     currentNote = "pata";
@@ -123,6 +137,8 @@ function keydownStartHandler(key){
             }
         } else {
             console.log("outOfSync");
+            currentNote = '';
+            currentNote = '';
         }
     }
 }
@@ -152,7 +168,7 @@ function render(){
     paintCanvas(canvasColor);
 }
 
-startWindowLoop(300);
+startWindowLoop(200);
 function frame(){
     updateWindowState(500);
     checkWindowOpen();
