@@ -54,6 +54,7 @@ function handlerWindowOpenBeforeTic(){
 function handlerWindowOpenAfterTic(){
     windowState = WINDOW_CLOSED;
     if(noteCounter%2){
+        background.play();
         //ticSound.cloneNode(true).play();
     }
 }
@@ -175,7 +176,6 @@ function render(){
     paintCanvas(canvasColor);
 }
 
-background.play();
 
 startWindowLoop(1000);
 function frame(){
