@@ -46,7 +46,9 @@ function handlerWindowOpenBeforeTic(){
 
 function handlerWindowOpenAfterTic(){
     windowState = WINDOW_CLOSED;
-    ticSound.play();
+    if(noteCounter%2){
+        ticSound.cloneNode(true).play();
+    }
 }
 
 function handlerWindowClosed(ticInterval){
@@ -56,14 +58,14 @@ function handlerWindowClosed(ticInterval){
     windowEnd += ticInterval;
     ticTime += ticInterval;
     if (currentNote != ''){
-        commandLine[noteCounter] = currentNote;
-        noteCounter++;
+        commandLine[noteCounter - 1] = currentNote;
+        console.log(noteCounter, );
         currentNote = '';
-    } else {
+    } else if (noteCounter%2 == 0){
         noteCounter = 0;
         commandLine.length = 0;
     }
-    console.log(commandLine);
+    noteCounter++;
 }
 
 function startWindowLoop(windowGap){
@@ -71,7 +73,6 @@ function startWindowLoop(windowGap){
     windowStart = getTime();
     windowEnd = windowStart + windowGap;
     ticTime = windowStart + (windowGap/2);
-    
 }
 
 function updateWindowState(ticInterval) {
@@ -118,26 +119,25 @@ function keydownStartHandler(key){
             switch(key){
                 case "Numpad4":
                     currentNote = "pata";
-                    snare.play();
+                    snare.cloneNode(true).play();
                     canvasColor = "#f07";
                     break;
                 case "Numpad6":
                     currentNote = "pon";
-                    pon.play();
+                    pon.cloneNode(true).play();
                     canvasColor = "#70f";
                     break;
                 case "Numpad2":
                     currentNote = "dunda";
-                    dunda.play();
+                    dunda.cloneNode(true).play();
                     break;
                 case "Numpad8":
                     currentNote = "pata";
-                    snare.play();
+                    snare.cloneNode(true).play();
                     break;
             }
         } else {
             console.log("outOfSync");
-            currentNote = '';
             currentNote = '';
         }
     }
@@ -168,9 +168,9 @@ function render(){
     paintCanvas(canvasColor);
 }
 
-startWindowLoop(200);
+startWindowLoop(250);
 function frame(){
-    updateWindowState(500);
+    updateWindowState(250);
     checkWindowOpen();
     keydownStartHandler();
     render();
