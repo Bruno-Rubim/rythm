@@ -21,14 +21,21 @@ let currentNote = '';
 let noteCounter = 0;
 let commandLine = [];
 
+
+let background = document.querySelector('#background');
+background.volume = "1";
+background.loop = "loop";
+
 let ticSound = document.querySelector('#tic');
-ticSound.volume = "0.5";
+ticSound.volume = "0.01";
 let snare = document.querySelector('#snare');
 snare.volume = "0.5";
 let dunda = document.querySelector('#dunda');
 dunda.volume = "0.5";
 let pon = document.querySelector('#pon');
 pon.volume = "0.5";
+let chaka = document.querySelector('#key');
+chaka.volume = "0.5";
 
 // Time
 
@@ -47,13 +54,13 @@ function handlerWindowOpenBeforeTic(){
 function handlerWindowOpenAfterTic(){
     windowState = WINDOW_CLOSED;
     if(noteCounter%2){
-        ticSound.cloneNode(true).play();
+        //ticSound.cloneNode(true).play();
     }
 }
 
 function handlerWindowClosed(ticInterval){
     windowState = WINDOW_OPEN_BEFORE_TIC;
-    windowOpen = false;
+    //windowOpen = false;
     windowStart += ticInterval;
     windowEnd += ticInterval;
     ticTime += ticInterval;
@@ -132,8 +139,8 @@ function keydownStartHandler(key){
                     dunda.cloneNode(true).play();
                     break;
                 case "Numpad8":
-                    currentNote = "pata";
-                    snare.cloneNode(true).play();
+                    currentNote = "key";
+                    chaka.cloneNode(true).play();
                     break;
             }
         } else {
@@ -168,7 +175,9 @@ function render(){
     paintCanvas(canvasColor);
 }
 
-startWindowLoop(250);
+background.play();
+
+startWindowLoop(1000);
 function frame(){
     updateWindowState(250);
     checkWindowOpen();
