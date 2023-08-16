@@ -27,15 +27,10 @@ background.volume = "1";
 background.loop = "loop";
 
 let ticSound = document.querySelector('#tic');
-ticSound.volume = "0.01";
 let snare = document.querySelector('#snare');
-snare.volume = "0.5";
 let dunda = document.querySelector('#dunda');
-dunda.volume = "0.5";
 let pon = document.querySelector('#pon');
-pon.volume = "0.5";
 let chaka = document.querySelector('#key');
-chaka.volume = "0.5";
 
 // Time
 
@@ -54,8 +49,8 @@ function handlerWindowOpenBeforeTic(){
 function handlerWindowOpenAfterTic(){
     windowState = WINDOW_CLOSED;
     if(noteCounter%2){
-        background.play();
-        //ticSound.cloneNode(true).play();
+        //background.play();
+        ticSound.cloneNode(true).play();
     }
 }
 
