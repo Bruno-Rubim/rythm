@@ -27,10 +27,10 @@ background.volume = "1";
 background.loop = "loop";
 
 let ticSound = document.querySelector('#tic');
-let snare = document.querySelector('#snare');
-let dunda = document.querySelector('#dunda');
-let pon = document.querySelector('#pon');
-let chaka = document.querySelector('#key');
+let left = document.querySelector('#left');
+let down = document.querySelector('#down');
+let right = document.querySelector('#right');
+let up = document.querySelector('#up');
 
 // Time
 
@@ -40,6 +40,10 @@ function getTime() {
 
 
 // Window
+
+function updateTempoState(){
+
+}
 
 function handlerWindowOpenBeforeTic(){
     windowOpen = true;
@@ -121,22 +125,22 @@ function keydownStartHandler(key){
         if(windowOpen){
             switch(key){
                 case "Numpad4":
-                    currentNote = "pata";
-                    snare.cloneNode(true).play();
+                    currentNote = "left";
+                    left.cloneNode(true).play();
                     canvasColor = "#f07";
                     break;
                 case "Numpad6":
-                    currentNote = "pon";
-                    pon.cloneNode(true).play();
+                    currentNote = "right";
+                    right.cloneNode(true).play();
                     canvasColor = "#70f";
                     break;
                 case "Numpad2":
-                    currentNote = "dunda";
-                    dunda.cloneNode(true).play();
+                    currentNote = "down";
+                    down.cloneNode(true).play();
                     break;
                 case "Numpad8":
                     currentNote = "key";
-                    chaka.cloneNode(true).play();
+                    up.cloneNode(true).play();
                     break;
             }
         } else {
