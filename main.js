@@ -8,29 +8,33 @@ let keyIsPressed = {};
 
 let startTime = Date.now();
 
-const WINDOW_OPEN_BEFORE_TIC = "window open bt";
-const WINDOW_OPEN_AFTER_TIC = "window open at";
-const WINDOW_CLOSED = "window closed";
-let windowState;
-let windowStart;
-let windowEnd;
-let ticTime;
-let windowOpen = false;
-
-let currentNote = '';
+let currentNote = undefined;
 let noteCounter = 0;
-let commandLine = [];
-
-
-let background = document.querySelector('#background');
-background.volume = "1";
-background.loop = "loop";
+let currentCommand = [];
+let possibleCommands = [];
+possibleCommands[0] = ["left", undefined, "left", undefined, "left", undefined, "right", undefined];
 
 let ticSound = document.querySelector('#tic');
 let left = document.querySelector('#left');
 let down = document.querySelector('#down');
 let right = document.querySelector('#right');
 let up = document.querySelector('#up');
+
+const BEFORE_MAIN_TIC = "bm";
+const AFTER_MAIN_TIC = "am";
+const BEFORE_HALF_TIC = "bh";
+const AFTER_HALF_TIC = "ah";
+let noteState = BEFORE_MAIN_TIC;
+let ticGap;
+let ticTime;
+let noteTimeStart;
+let noteTimeEnd;
+
+let outOfRythm;
+
+let background = document.querySelector('#background');
+background.volume = "1";
+background.loop = "loop";
 
 // Time
 
@@ -39,75 +43,86 @@ function getTime() {
 }
 
 
-// Window
+// Note
 
-function updateTempoState(){
-
+function startNoteLoop(bpm){
+    ticGap = 250*(bpm/250);
+    noteTimeStart = getTime();
+    noteTimeEnd = noteTimeStart + ticGap;
+    ticTime = noteTimeStart + ticGap/4;
 }
 
-function handlerWindowOpenBeforeTic(){
-    windowOpen = true;
-    windowState = WINDOW_OPEN_AFTER_TIC;
-}
-
-function handlerWindowOpenAfterTic(){
-    windowState = WINDOW_CLOSED;
-    if(noteCounter%2){
-        //background.play();
+function handlerBeforeMainTic(){
+    if (getTime() > ticTime){
+        noteState = AFTER_MAIN_TIC;
         ticSound.cloneNode(true).play();
     }
 }
 
-function handlerWindowClosed(ticInterval){
-    windowState = WINDOW_OPEN_BEFORE_TIC;
-    //windowOpen = false;
-    windowStart += ticInterval;
-    windowEnd += ticInterval;
-    ticTime += ticInterval;
-    if (currentNote != ''){
-        commandLine[noteCounter - 1] = currentNote;
-        console.log(noteCounter, );
-        currentNote = '';
-    } else if (noteCounter%2 == 0){
+function handlerAfterMainTic(){
+    if (getTime() > noteTimeEnd) {
+        noteState =  BEFORE_HALF_TIC;
+        currentNote = undefined;
+        noteTimeStart += ticGap;
+        noteTimeEnd += ticGap;
+        ticTime += ticGap;
+        noteCounter++;
+    }
+}
+
+function handlerBeforeHalfTic(){
+    if (getTime() > ticTime){
+        noteState = AFTER_HALF_TIC;
+        //ticSound.cloneNode(true).play();
+    }
+}
+
+function handlerAfterHalfTic(){
+    if (getTime() > noteTimeEnd) {
+        noteState =  BEFORE_MAIN_TIC;
+        currentNote = undefined;
+        noteTimeStart += ticGap;
+        noteTimeEnd += ticGap;
+        ticTime += ticGap;
+        noteCounter++;
+        outOfRythm = false;
+    }
+}
+
+function updateNoteState(){
+    switch(noteState){
+        case BEFORE_MAIN_TIC:
+            handlerBeforeMainTic();
+            break;
+        case AFTER_MAIN_TIC:
+            handlerAfterMainTic();
+            break;
+        case BEFORE_HALF_TIC:
+            handlerBeforeHalfTic();
+            break;
+        case AFTER_HALF_TIC:
+            handlerAfterHalfTic();
+            break;
+    }
+    if (noteCounter > 7) {
+        noteCounter = -8;
+    }
+}
+
+function checkRythm(){
+    for (let i = 0; i < possibleCommands.length; i++){
+        if (!(currentNote == possibleCommands[i][noteCounter])){
+            outOfRythm = true;
+        }
+        console.log(currentNote, possibleCommands[i][noteCounter], i, noteCounter);
+    }
+
+    if (outOfRythm){
         noteCounter = 0;
-        commandLine.length = 0;
-    }
-    noteCounter++;
-}
-
-function startWindowLoop(windowGap){
-    windowState = WINDOW_OPEN_BEFORE_TIC;
-    windowStart = getTime();
-    windowEnd = windowStart + windowGap;
-    ticTime = windowStart + (windowGap/2);
-}
-
-function updateWindowState(ticInterval) {
-    switch(windowState) {
-        case WINDOW_OPEN_BEFORE_TIC:
-            if (getTime() >= ticTime) {
-                handlerWindowOpenBeforeTic();
-            }
-            break;
-        case WINDOW_OPEN_AFTER_TIC:
-            if (getTime() >= windowEnd) {
-                handlerWindowOpenAfterTic();
-            }
-            break;
-        case WINDOW_CLOSED:
-            if (getTime() >= windowStart){
-                handlerWindowClosed(ticInterval);
-            }
-            break;
-    }
-}
-
-
-function checkWindowOpen(){
-    if (windowOpen){
-        canvasColor = "#201";
-    } else {
+        currentNote = "wrong";
         canvasColor = "#000";
+    } else {
+        canvasColor = "#333";
     }
 }
 
@@ -122,7 +137,7 @@ function keydownStartHandler(key){
         noteAttempt = true;
     }
     if(noteAttempt){
-        if(windowOpen){
+        if (currentNote == undefined){
             switch(key){
                 case "Numpad4":
                     currentNote = "left";
@@ -132,20 +147,21 @@ function keydownStartHandler(key){
                 case "Numpad6":
                     currentNote = "right";
                     right.cloneNode(true).play();
-                    canvasColor = "#70f";
+                    canvasColor = "#07f";
                     break;
                 case "Numpad2":
                     currentNote = "down";
                     down.cloneNode(true).play();
+                    canvasColor = "#f70";
                     break;
                 case "Numpad8":
                     currentNote = "key";
                     up.cloneNode(true).play();
+                    canvasColor = "#0f7";
                     break;
             }
         } else {
-            console.log("outOfSync");
-            currentNote = '';
+            outOfRythm = true;
         }
     }
 }
@@ -175,14 +191,15 @@ function render(){
     paintCanvas(canvasColor);
 }
 
+startNoteLoop(1200);
 
-startWindowLoop(1000);
 function frame(){
-    updateWindowState(250);
-    checkWindowOpen();
+    updateNoteState();
     keydownStartHandler();
+    checkRythm();
     render();
     requestAnimationFrame(frame);
+    //console.log(outOfRythm);
 }
 
 frame();
